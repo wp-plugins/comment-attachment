@@ -58,5 +58,5 @@ It should be easy peasy for you to style it! :)
 
 == Changelog ==
 = 1.0 =
-* Fixed small typo.
+* Fixed small typos.
 * Plugin released.
