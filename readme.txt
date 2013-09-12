@@ -6,6 +6,7 @@ Requires at least: 3.0
 Tested up to: 3.6
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Stable tag: 1.0
 
 Allow your visitors to attach files with their comments!
 
@@ -30,22 +31,22 @@ If an error occurs, like required attachment, or visitor trying to upload not al
 To control the output, in your css, you can use these classes and id's. For form elements:
 
 `.comment-form-attachment {}
-.comment-form-attachement label .attachementRules {}
-.comment-form-attachement input#attachement {}`
+.comment-form-attachement label .attachmentRules {}
+.comment-form-attachement input#attachment {}`
 
 and for inner comment elements:
 
-`.attachementFile {}
-.attachementFile p {}
-.attachementLink {}
-.attachementLink img {}`
+`.attachmentFile {}
+.attachmentFile p {}
+.attachmentLink {}
+.attachmentLink img {}`
 
 It should be easy peasy for you to style it! :)
 
 == Installation ==
 
 1. Go to your admin area and select Plugins -> Add new from the menu.
-2. Search for "Comment Attachement".
+2. Search for "Comment Attachment".
 3. Click install.
 4. Click activate.
 
@@ -57,4 +58,5 @@ It should be easy peasy for you to style it! :)
 
 == Changelog ==
 = 1.0 =
+* Fixed small typos.
 * Plugin released.
