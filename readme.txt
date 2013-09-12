@@ -46,7 +46,7 @@ It should be easy peasy for you to style it! :)
 == Installation ==
 
 1. Go to your admin area and select Plugins -> Add new from the menu.
-2. Search for "Comment Attachement".
+2. Search for "Comment Attachment".
 3. Click install.
 4. Click activate.
 
