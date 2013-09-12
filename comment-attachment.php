@@ -223,7 +223,7 @@ if (!class_exists('wpCommentAttachment')){
          * @return array
          */
 
-        private function getpluginFileTypes()
+        private function getPluginFileTypes()
         {
             return array(
                 $this->adminPrefix . 'JPG' => 'image/jpeg',
