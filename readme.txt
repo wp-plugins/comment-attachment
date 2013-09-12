@@ -36,10 +36,10 @@ To control the output, in your css, you can use these classes and id's. For form
 
 and for inner comment elements:
 
-`.attachementFile {}
-.attachementFile p {}
-.attachementLink {}
-.attachementLink img {}`
+`.attachmentFile {}
+.attachmentFile p {}
+.attachmentLink {}
+.attachmentLink img {}`
 
 It should be easy peasy for you to style it! :)
 
