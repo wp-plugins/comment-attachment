@@ -22,11 +22,11 @@ This plugin allows your visitors to attach files with their comments, such as do
 * Select if attachment is visible in the the actual comment.
 * Select if attachment should be attached to post your visitor comments on, or not.
 * Select position of attachment in comment, either before the main comment, or after it.
-* Decide whether attachaments can be downloaded.
-* Decide if attachment image should be displayed in comment and select image size (it automatically loads all image sizes set up in your installation and by your theme using 'add_image_size')
+* Decide whether attachment can be downloaded.
+* Decide if the attachment image should be displayed in a comment and select image size (it automatically loads all image sizes set up in your wordpress installation and by your theme using 'add_image_size')
 * Restrict file size of uploaded attachment.
 
-All attachments are inserted in your main wordpress media gallery, and are attached (if set in settings) to current post. After comment deletition is the attachment removed from wordpress media gallery (if set in settings).
+All attachments are inserted in your main wordpress media gallery, and are attached (if set in settings) to current commented post. (if set in settings). Upon comment deletion the attachment in that comment is deleted as well (if set in settings).
 
 If an error occurs, like required attachment, or visitor trying to upload not allowed file type, plugin uses native `wp_die()` to handle the error, which can play nicely, if you use some other plugin for handeling comment form errors in a different way, [like this one](http://wordpress.org/plugins/comment-form-inline-errors/ "Comment form inline errors").
 
