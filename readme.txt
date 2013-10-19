@@ -6,7 +6,7 @@ Requires at least: 3.0
 Tested up to: 3.6.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Stable tag: 1.1
+Stable tag: 1.2
 
 Allow your visitors to attach files with their comments!
 
@@ -25,6 +25,7 @@ This plugin allows your visitors to attach files with their comments, such as do
 * Decide whether attachment can be downloaded.
 * Decide if the attachment image should be displayed in a comment and select image size (it automatically loads all image sizes set up in your wordpress installation and by your theme using 'add_image_size')
 * Restrict file size of uploaded attachment.
+* Try Wordpress 3.6^ experimental audio / video player.
 
 All attachments are inserted in your main wordpress media gallery, and are attached (if set in settings) to current commented post. (if set in settings). Upon comment deletion the attachment in that comment is deleted as well (if set in settings).
 
@@ -57,9 +58,16 @@ It should be easy peasy for you to style it! :)
 1. Settings page in wp admin. Settings > Discussion > Comment Attachment
 2. Attachment field in comment form.
 3. Attachments in comments with links and image thumbnails.
+4. Wordpress 3.6.x video player
+5. Wordpress 3.6.x audio player
 
 == Changelog ==
-
+= 1.2 =
+* Categorized file types in the admin
+* Added new allowed file types (RAR, ZIP, WMA, MP4, M4V, MOV, WMV, AVI, MPG, OGV, 3GP, 3G2, FLV, WEBM)
+* Added experimental audio / video player, using native [video] and [audio] shortcode
+* Added media gallery allowed mime types fix
+* Added maxium file size info into comment form.
 = 1.1 =
 * Added new allowed file types (PPT, PPTX, PPS, PPSX, ODT, XLS, XLSX, MP3, M4A, OGG, WAV)
 * Added max. file size settings.
