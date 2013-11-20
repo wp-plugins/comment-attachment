@@ -63,12 +63,12 @@ It should be easy peasy for you to style it! :)
 
 == Upgrade Notice ==
 
-== 1.2.1 ==
+= 1.2.1 =
 * Experimental featured image feature removal, bug-fix.
 
 == Changelog ==
 
-== 1.2.1 ==
+= 1.2.1 =
 * Experimental featured image feature removal, bug-fix.
 
 = 1.2 =
