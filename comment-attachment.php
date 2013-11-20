@@ -6,7 +6,7 @@
     Author: latorante
     Author URI: http://latorante.name
     Author Email: martin@latorante.name
-    Version: 1.2
+    Version: 1.2.1
     License: GPLv2
 */
 /*
@@ -31,10 +31,6 @@ if (!defined('ABSPATH')) { exit; }
 if (!class_exists('wpCommentAttachment')){
     class wpCommentAttachment
     {
-        /* minimum required wp version */
-        public $wpVer           = "3.0";
-        /* minimum required php version */
-        public $phpVer          = "5.3";
         /* admin settings */
         private $adminPage      = 'discussion';
         private $adminCheckboxes;
@@ -45,6 +41,10 @@ if (!class_exists('wpCommentAttachment')){
 
         public function __construct()
         {
+            error_reporting(0);
+            // minimum requirements check
+            require_once('check.php');
+            reqCheck::checkRequirements();
             if(!get_option($this->key)){ $this->initializeSettings(); }
             $this->settings = $this->getSavedSettings();
             $this->defineConstants();
@@ -71,9 +71,6 @@ if (!class_exists('wpCommentAttachment')){
             add_action('comment_post',              array($this, 'saveAttachment'));
             add_action('delete_comment',            array($this, 'deleteAttachment'));
             add_filter('upload_mimes',              array($this, 'getAllowedUploadMimes'));
-            add_post_type_support( 'attachment:audio', 'thumbnail' );
-            add_post_type_support( 'attachment:video', 'thumbnail' );
-            add_theme_support( 'post-thumbnails', array( 'attachment:audio', 'attachment:video' ) );
         }
 
 
@@ -988,13 +985,13 @@ if (!class_exists('wpCommentAttachment')){
         {
             extract($args);
             $field_args = array(
-                'type'      => $type,
-                'id'        => $id,
-                'desc'      => $desc,
-                'std'       => $std,
-                'choices'   => $choices,
-                'label_for' => $id,
-                'class'     => $class
+                'type'      => isset($type) ? $type : NULL,
+                'id'        => isset($id) ? $id : NULL,
+                'desc'      => isset($desc) ? $desc : NULL,
+                'std'       => isset($std) ? $std : NULL,
+                'choices'   => isset($choices) ? $choices : NULL,
+                'label_for' => isset($id) ? $id : NULL,
+                'class'     => isset($class) ? $class : NULL
             );
             if ($type == 'checkbox'){ $this->adminCheckboxes[] = $id; }
             add_settings_field($id, $title, array($this, 'displaySetting'), $this->adminPage, $section, $field_args);
@@ -1012,57 +1009,11 @@ if (!class_exists('wpCommentAttachment')){
 
         private function checkRequirements()
         {
-            global $wp_version;
-            if (!version_compare($wp_version, $this->wpVer, '>=')){
-                $this->pluginDeactivate();
-                add_action('admin_notices', array($this, 'displayVersionNotice'));
-                return FALSE;
-            } elseif (!version_compare(PHP_VERSION, $this->phpVer, '>=')){
-                $this->pluginDeactivate();
-                add_action('admin_notices', array($this, 'displayPHPNotice'));
-                return FALSE;
-            } elseif (!function_exists('mime_content_type') && !function_exists('finfo_file')){
+            if (!function_exists('mime_content_type') && !function_exists('finfo_file')){
                 add_action('admin_notices', array($this, 'displayFunctionMissingNotice'));
                 return TRUE;
             }
             return TRUE;
-        }
-
-
-        /**
-         * Deactivates our plugin if anything goes wrong. Also, removes the
-         * "Plugin activated" message, if we don't pass requriments check.
-         */
-
-        private function pluginDeactivate()
-        {
-            require_once(ABSPATH . 'wp-admin/includes/plugin.php');
-            deactivate_plugins(plugin_basename(__FILE__));
-            unset($_GET['activate']);
-        }
-
-
-        /**
-         * Displays outdated wordpress messsage.
-         */
-
-        public function displayVersionNotice()
-        {
-            global $wp_version;
-            $this->displayAdminError(
-                'Sorry mate, this plugin requires at least WordPress varsion ' . $this->wpVer . ' or higher.
-                You are currently using ' . $wp_version . '. Please upgrade your WordPress.');
-        }
-
-
-        /**
-         * Displays outdated php message.
-         */
-
-        public function displayPHPNotice()
-        {
-            $this->displayAdminError(
-                'You need PHP version at least '. $this->phpVer .' to run this plugin. You are currently using PHP version ' . PHP_VERSION . '.');
         }
 
 
