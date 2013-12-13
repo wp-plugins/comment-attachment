@@ -1,4 +1,13 @@
 <?php
+/**
+ * This file is part of the Comment Attachment plugin.
+ *
+ * Copyright (c) 2013 Martin Pícha (http://latorante.name)
+ *
+ * For the full copyright and license information, please view
+ * the comment-attachment.php file in root directory of this plugin.
+ */
+
 if (!defined('ABSPATH')) { exit; }
 
 class reqCheck

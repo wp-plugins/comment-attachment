@@ -3,10 +3,10 @@ Contributors: latorante
 Donate link: http://donate.latorante.name/
 Tags: comments, comment, image, attachment, images, files
 Requires at least: 3.0
-Tested up to: 3.6.1
+Tested up to: 3.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Stable tag: 1.2.1
+Stable tag: 1.3
 
 Allow your visitors to attach files with their comments!
 
@@ -63,10 +63,18 @@ It should be easy peasy for you to style it! :)
 
 == Upgrade Notice ==
 
+= 1.3 =
+* APK and rel="lightbox" on image attachments
+
 = 1.2.1 =
 * Experimental featured image feature removal, bug-fix.
 
 == Changelog ==
+
+= 1.3 =
+* Added new allowed file types (APK)
+* Added rel="lightbox" to image links
+* Better requirements check
 
 = 1.2.1 =
 * Experimental featured image feature removal, bug-fix.
@@ -84,6 +92,7 @@ It should be easy peasy for you to style it! :)
 * Added loads of non-official but used mime types.
 * Added file extension check.
 * Added option to change attachment title in comment text.
+
 = 1.0 =
 * Fixed small typos.
 * Plugin released.
