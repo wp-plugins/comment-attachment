@@ -27,12 +27,31 @@ if (!class_exists('wpCommentAttachment')){
             if(!get_option($this->key)){ $this->initializeSettings(); }
             $this->settings = $this->getSavedSettings();
             $this->defineConstants();
+            add_action('plugins_loaded', array($this, 'loaded'));
             add_action('init', array($this, 'init'));
             add_action('admin_init', array($this, 'adminInit'));
         }
 
 
         /******************* Inits, innit :D *******************/
+
+        /**
+         * Loaded, check request
+         */
+
+        public function loaded()
+        {
+            // check to delete att
+            if(isset($_GET['deleteAtt']) && ($_GET['deleteAtt'] == '1')){
+                if((isset($_GET['c'])) && is_numeric($_GET['c'])){
+                    wpCommentAttachment::deleteAttachment($_GET['c']);
+                    delete_comment_meta($_GET['c'], 'attachmentId');
+                    add_action('admin_notices', function(){
+                        echo "<div class='updated'><p>Comment Attachment deleted.</p></div>";
+                    });
+                }
+            }
+        }
 
         /**
          * Classic init
@@ -50,6 +69,7 @@ if (!class_exists('wpCommentAttachment')){
             add_action('comment_post',              array($this, 'saveAttachment'));
             add_action('delete_comment',            array($this, 'deleteAttachment'));
             add_filter('upload_mimes',              array($this, 'getAllowedUploadMimes'));
+            add_filter('comment_notification_text', array($this, 'notificationText'), 10, 2);
         }
 
 
@@ -61,6 +81,7 @@ if (!class_exists('wpCommentAttachment')){
         {
             $this->setUserNag();
             add_filter('plugin_action_links', array($this, 'displayPluginActionLink'), 10, 2);
+            add_filter('comment_row_actions', array($this, 'addCommentActionLinks'), 10, 2);
             register_setting($this->adminPage, $this->key, array($this, 'validateSettings'));
             add_settings_section($this->adminPrefix,           'Comment Attachment', '', $this->adminPage);
             add_settings_section($this->adminPrefix . 'Types', 'Allowed File Types', '', $this->adminPage);
@@ -716,6 +737,25 @@ if (!class_exists('wpCommentAttachment')){
 
 
         /**
+         * Notification email message
+         *
+         * @param $notify_message
+         * @param $comment_id
+         * @return string
+         */
+
+        public function notificationText($notify_message,  $comment_id)
+        {
+            if(wpCommentAttachment::hasAttachment($comment_id)){
+                $attachmentId = get_comment_meta($comment_id, 'attachmentId', TRUE);
+                $attachmentName = basename(get_attached_file($attachmentId));
+                $notify_message .= 'Attachment:' . "\r\n" .  $attachmentName . "\r\n\r\n";
+            }
+            return $notify_message;
+        }
+
+
+        /**
          * Inserts file attachment from your comment to wordpress
          * media library, assigned to post.
          *
@@ -847,7 +887,50 @@ if (!class_exists('wpCommentAttachment')){
         }
 
 
+        /**
+         * Has attachment
+         *
+         * @param $commentId
+         * @return bool
+         */
+
+        public static function hasAttachment($commentId)
+        {
+            $attachmentId = get_comment_meta($commentId, 'attachmentId', TRUE);
+            if(is_numeric($attachmentId) && !empty($attachmentId)){
+                return true;
+            }
+            return false;
+        }
+
+
         /*************** Admin Settings Functions **************/
+
+        /**
+         * Comment Action links
+         *
+         * @param $actions
+         * @param $comment
+         * @return array
+         */
+
+        public function addCommentActionLinks($actions, $comment)
+        {
+            if(wpCommentAttachment::hasAttachment($comment->comment_ID)){
+                $url = $_SERVER["SCRIPT_NAME"] . "?c=$comment->comment_ID&deleteAtt=1";
+                $actions['deleteAtt'] = "<a href='$url' title='".esc_attr__('Delete Attachment')."'>".__('Delete Attachment').'</a>';
+            }
+            return $actions;
+        }
+
+
+        /**
+         * Plugin action links
+         *
+         * @param $links
+         * @param $file
+         * @return mixed
+         */
 
         public function displayPluginActionLink($links, $file)
         {

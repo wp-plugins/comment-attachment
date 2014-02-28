@@ -6,7 +6,7 @@ Requires at least: 3.0
 Tested up to: 3.8
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Stable tag: 1.3
+Stable tag: 1.3.5
 
 Allow your visitors to attach files with their comments!
 
@@ -70,6 +70,10 @@ It should be easy peasy for you to style it! :)
 * Experimental featured image feature removal, bug-fix.
 
 == Changelog ==
+
+= 1.3.5 =
+* Added ability to delete attachment from wordpress admin.
+* Attachment added to notification e-mail message
 
 = 1.3 =
 * Added new allowed file types (APK)
