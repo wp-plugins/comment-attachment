@@ -20,7 +20,9 @@ if (!class_exists('wpCommentAttachment')){
         private $key            = 'commentAttachment';
         private $settings;
 
-
+        /**
+         * Constructor
+         */
         public function __construct()
         {
             error_reporting(0);
@@ -47,7 +49,7 @@ if (!class_exists('wpCommentAttachment')){
                     wpCommentAttachment::deleteAttachment($_GET['c']);
                     delete_comment_meta($_GET['c'], 'attachmentId');
                     add_action('admin_notices', function(){
-                        echo "<div class='updated'><p>Comment Attachment deleted.</p></div>";
+                        echo "<div class='updated'><p>".__('Comment Attachment deleted.','comment-attachment')."</p></div>";
                     });
                 }
             }
@@ -59,19 +61,22 @@ if (!class_exists('wpCommentAttachment')){
 
         public function init()
         {
+            // Language support
+            load_plugin_textdomain('comment-attachment', false, dirname(plugin_basename(__FILE__)).'/languages/');
+            // Check Requriemnts
             if(!$this->checkRequirements()){ return; }
-            add_filter('preprocess_comment',        array($this, 'checkAttachment'));
+            // Magic actions
+            add_filter('preprocess_comment',        array($this, 'checkAttachment'), 10, 1);
             add_action('comment_form_top',          array($this, 'displayBeforeForm'));
             add_action('comment_form_before_fields',array($this, 'displayFormAttBefore'));
             add_action('comment_form_after_fields', array($this, 'displayFormAttAfter'));
             add_action('comment_form_logged_in_after',array($this, 'displayFormAtt'));
-            add_filter('comment_text',              array($this, 'displayAttachment'));
+            add_filter('comment_text',              array($this, 'displayAttachment'), 10, 3);
             add_action('comment_post',              array($this, 'saveAttachment'));
             add_action('delete_comment',            array($this, 'deleteAttachment'));
-            add_filter('upload_mimes',              array($this, 'getAllowedUploadMimes'));
+            add_filter('upload_mimes',              array($this, 'getAllowedUploadMimes'), 10, 1);
             add_filter('comment_notification_text', array($this, 'notificationText'), 10, 2);
         }
-
 
         /**
          * Admin init
@@ -83,8 +88,8 @@ if (!class_exists('wpCommentAttachment')){
             add_filter('plugin_action_links', array($this, 'displayPluginActionLink'), 10, 2);
             add_filter('comment_row_actions', array($this, 'addCommentActionLinks'), 10, 2);
             register_setting($this->adminPage, $this->key, array($this, 'validateSettings'));
-            add_settings_section($this->adminPrefix,           'Comment Attachment', '', $this->adminPage);
-            add_settings_section($this->adminPrefix . 'Types', 'Allowed File Types', '', $this->adminPage);
+            add_settings_section($this->adminPrefix,           __('Comment Attachment','comment-attachment'), '', $this->adminPage);
+            add_settings_section($this->adminPrefix . 'Types', __('Allowed File Types','comment-attachment'), '', $this->adminPage);
             foreach ($this->getSettings() as $id => $setting){
                 $setting['id'] = $id;
                 $this->createSetting($setting);
@@ -103,104 +108,101 @@ if (!class_exists('wpCommentAttachment')){
         public function getSettings() {
             $setts[$this->adminPrefix . 'Position'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Display attachment field',
+                'title'   => __('Display attachment field','comment-attachment'),
                 'desc'    => '',
                 'type'    => 'select',
                 'std'     => '',
                 'choices' => array(
-                    'before' => 'Before default comment form fields.',
-                    'after' => 'After default comment form fields.')
+                    'before' => __('Before default comment form fields.','comment-attachment'),
+                    'after' => __('After default comment form fields.','comment-attachment'))
             );
             $setts[$this->adminPrefix . 'Title'] = array(
-                'title'   => 'Attachment field title',
+                'title'   => __('Attachment field title','comment-attachment'),
                 'desc'    => '',
-                'std'     => 'Upload Attachment',
+                'std'     => __('Upload attachment','comment-attachment'),
                 'type'    => 'text',
                 'section' => $this->adminPrefix
             );
             $setts[$this->adminPrefix . 'MaxSize'] = array(
-                'title'   => 'Maxium file size <small>(in megabytes)</small>',
-                'desc'    => 'Your server currently allows us to use maximum of <strong>' . $this->getMaximumUploadFileSize() . 'MB(s).</strong>',
+                'title'   => __('Maxium file size <small>(in megabytes)</small>','comment-attachment'),
+                'desc'    => sprintf(__('Your server currently allows us to use maximum of <strong>%s MB(s).</strong>','comment-attachment'),$this->getMaximumUploadFileSize()),
                 'std'     => $this->getMaximumUploadFileSize(),
                 'type'    => 'number',
                 'section' => $this->adminPrefix
             );
             $setts[$this->adminPrefix . 'Required'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Is attachment required?',
+                'title'   => __('Is attachment required?','comment-attachment'),
                 'desc'    => '',
                 'type'    => 'checkbox',
                 'std'     => 0
             );
             $setts[$this->adminPrefix . 'Bind'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Attach attachment with current post?',
+                'title'   => __('Attach attachment with current post?','comment-attachment'),
                 'desc'    => '',
                 'type'    => 'checkbox',
                 'std'     => 1
             );
             $setts[$this->adminPrefix . 'ThumbTitle'] = array(
-                'title'   => 'Text before attachment in a commment',
+                'title'   => __('Text before attachment in a commment','comment-attachment'),
                 'desc'    => '',
-                'std'     => 'Attachment:',
+                'std'     => __('Attachment','comment-attachment'),
                 'type'    => 'text',
                 'section' => $this->adminPrefix
             );
             $setts[$this->adminPrefix . 'APosition'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Position of attchment in comment text',
+                'title'   => __('Position of attchment in comment text','comment-attachment'),
                 'desc'    => '',
                 'type'    => 'select',
                 'std'     => '',
                 'choices' => array(
-                    'before' => 'Before comment.',
-                    'after' => 'After comment.',
-                    'none' => 'Don\'t display attchment. (really?)')
+                    'before' => __('Before comment.','comment-attachment'),
+                    'after' =>  __('After comment.','comment-attachment'),
+                    'none' => __('Don\'t display attachment. (really?)','comment-attachment'))
             );
             $setts[$this->adminPrefix . 'Link'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Make attchment in comment a link?',
-                'desc'    => '(Link\'s to the original file.)',
+                'title'   => __('Make attachment in comment a link?','comment-attachment'),
+                'desc'    => __('(Links to the original file.)','comment-attachment'),
                 'type'    => 'checkbox',
                 'std'     => 0
             );
             $setts[$this->adminPrefix . 'Thumb'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Show image thumbnail?',
-                'desc'    => '(if attachment is image)',
+                'title'   => __('Show image thumbnail?','comment-attachment'),
+                'desc'    => __('(if attachment is image)','comment-attachment'),
                 'type'    => 'checkbox',
                 'std'     => 1
             );
             $setts[$this->adminPrefix . 'ThumbSize'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Image attachment size in comment',
-                'desc'    => '(if thumbnail is set to visible, and is image)',
+                'title'   => __('Image attachment size in comment','comment-attachment'),
+                'desc'    => __('(if thumbnail is set to visible, and is image)','comment-attachment'),
                 'type'    => 'select',
                 'std'     => '',
                 'choices' => $this->getRegisteredImageSizes()
             );
             $setts[$this->adminPrefix . 'Player'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Try to embed audio/video player?',
-                'desc'    => '(if attachment is audio/video)<br />
-                            <strong style="color: red;">NOTE: </strong>This is an experimental feature, assuming you are using <strong>Wordpress 3.6, and higher,</strong> it uses the wordpress native <br />
-                            <code>[video]</code> and <code>[audio]</code> shortcodes to attach media file. It only takes <strong>.mp4, .m4v, .webm, .ogv, .wmv, .flv</strong> for videos,<br />
-                            and <strong>.mp3, .m4a, .ogg, .wav, .wma</strong> for audio files. Read more about <a href="http://codex.wordpress.org/Video_Shortcode" target="_blank">[video] shortcode</a>, or read more about <a href="https://codex.wordpress.org/Audio_Shortcode" target="_blank">[audio] shortcode.</a>',
+                'title'   => __('Try to embed audio/video player?','comment-attachment'),
+                'desc'    => __('(if attachment is audio/video)<br /><strong style="color: red;">NOTE: </strong>This is an experimental feature, assuming you are using <strong>Wordpress 3.6, and higher,</strong> it uses the wordpress native <br /><code>[video]</code> and <code>[audio]</code> shortcodes to attach media file. It only takes <strong>.mp4, .m4v, .webm, .ogv, .wmv, .flv</strong> for videos,<br />and <strong>.mp3, .m4a, .ogg, .wav, .wma</strong> for audio files. Read more about <a href="http://codex.wordpress.org/Video_Shortcode" target="_blank">[video] shortcode</a>, or read more about <a href="https://codex.wordpress.org/Audio_Shortcode" target="_blank">[audio] shortcode.</a>','comment-attachment'),
                 'type'    => 'checkbox',
                 'std'     => 1
             );
             $setts[$this->adminPrefix . 'Delete'] = array(
                 'section' => $this->adminPrefix,
-                'title'   => 'Delete attachment upon comment deletition?<br />',
+                'title'   => __('Delete attachment upon comment deletition?<br />','comment-attachment'),
                 'desc'    => '',
                 'type'    => 'checkbox',
                 'std'     => 1
             );
-            $setts[$this->adminPrefix . 'H01']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Images</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H01']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Images</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'JPG']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'JPG', 'type' => 'checkbox', 'std' => 1);
             $setts[$this->adminPrefix . 'GIF']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'GIF', 'type' => 'checkbox', 'std' => 1);
             $setts[$this->adminPrefix . 'PNG']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'PNG', 'type' => 'checkbox', 'std' => 1);
-            $setts[$this->adminPrefix . 'H02']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Documents</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H02']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Documents</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'PDF']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'PDF', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'DOC']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'DOC', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'DOCX'] = array('section' => $this->adminPrefix . 'Types', 'title' => 'DOCX', 'type' => 'checkbox', 'std' => 0);
@@ -211,16 +213,16 @@ if (!class_exists('wpCommentAttachment')){
             $setts[$this->adminPrefix . 'ODT']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'ODT', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'XLS']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'XLS', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'XLSX'] = array('section' => $this->adminPrefix . 'Types', 'title' => 'XLSX', 'type' => 'checkbox', 'std' => 0);
-            $setts[$this->adminPrefix . 'H03']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Archives</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H03']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Archives</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'RAR']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'RAR', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'ZIP']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'ZIP', 'type' => 'checkbox', 'std' => 0);
-            $setts[$this->adminPrefix . 'H04']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Audio</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H04']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Audio</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'MP3']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'MP3', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'M4A']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'M4A', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'OGG']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'OGG', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'WAV']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'WAV', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'WMA']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'WMA', 'type' => 'checkbox', 'std' => 0);
-            $setts[$this->adminPrefix . 'H05']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Video</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H05']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Video</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'MP4']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'MP4', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'M4V']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'M4V', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'MOV']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'MOV', 'type' => 'checkbox', 'std' => 0);
@@ -232,7 +234,7 @@ if (!class_exists('wpCommentAttachment')){
             $setts[$this->adminPrefix . '3G2']  = array('section' => $this->adminPrefix . 'Types', 'title' => '3G2', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'FLV']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'FLV', 'type' => 'checkbox', 'std' => 0);
             $setts[$this->adminPrefix . 'WEBM'] = array('section' => $this->adminPrefix . 'Types', 'title' => 'WEBM ', 'type' => 'checkbox', 'std' => 0);
-            $setts[$this->adminPrefix . 'H06']  = array('section' => $this->adminPrefix . 'Types', 'title' => '<strong>Others</strong>', 'type' => 'heading');
+            $setts[$this->adminPrefix . 'H06']  = array('section' => $this->adminPrefix . 'Types', 'title' => __('<strong>Others</strong>','comment-attachment'), 'type' => 'heading');
             $setts[$this->adminPrefix . 'APK']  = array('section' => $this->adminPrefix . 'Types', 'title' => 'APK ', 'type' => 'checkbox', 'std' => 0);
             return $setts;
         }
@@ -310,137 +312,137 @@ if (!class_exists('wpCommentAttachment')){
         {
             return array(
                 $this->adminPrefix . 'JPG' => array(
-                                        'image/jpeg',
-                                        'image/jpg',
-                                        'image/jp_',
-                                        'application/jpg',
-                                        'application/x-jpg',
-                                        'image/pjpeg',
-                                        'image/pipeg',
-                                        'image/vnd.swiftview-jpeg',
-                                        'image/x-xbitmap'),
+                    'image/jpeg',
+                    'image/jpg',
+                    'image/jp_',
+                    'application/jpg',
+                    'application/x-jpg',
+                    'image/pjpeg',
+                    'image/pipeg',
+                    'image/vnd.swiftview-jpeg',
+                    'image/x-xbitmap'),
                 $this->adminPrefix . 'GIF' => array(
-                                        'image/gif',
-                                        'image/x-xbitmap',
-                                        'image/gi_'),
+                    'image/gif',
+                    'image/x-xbitmap',
+                    'image/gi_'),
                 $this->adminPrefix . 'PNG' => array(
-                                        'image/png',
-                                        'application/png',
-                                        'application/x-png'),
+                    'image/png',
+                    'application/png',
+                    'application/x-png'),
                 $this->adminPrefix . 'DOCX'=> 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                 $this->adminPrefix . 'RAR'=> 'application/x-rar-compressed',
                 $this->adminPrefix . 'ZIP' => array(
-                                        'application/zip',
-                                        'application/x-zip',
-                                        'application/x-zip-compressed',
-                                        'application/x-compress',
-                                        'application/x-compressed',
-                                        'multipart/x-zip'),
+                    'application/zip',
+                    'application/x-zip',
+                    'application/x-zip-compressed',
+                    'application/x-compress',
+                    'application/x-compressed',
+                    'multipart/x-zip'),
                 $this->adminPrefix . 'DOC' => array(
-                                        'application/msword',
-                                        'application/doc',
-                                        'application/text',
-                                        'application/vnd.msword',
-                                        'application/vnd.ms-word',
-                                        'application/winword',
-                                        'application/word',
-                                        'application/x-msw6',
-                                        'application/x-msword'),
+                    'application/msword',
+                    'application/doc',
+                    'application/text',
+                    'application/vnd.msword',
+                    'application/vnd.ms-word',
+                    'application/winword',
+                    'application/word',
+                    'application/x-msw6',
+                    'application/x-msword'),
                 $this->adminPrefix . 'PDF' => array(
-                                        'application/pdf',
-                                        'application/x-pdf',
-                                        'application/acrobat',
-                                        'applications/vnd.pdf',
-                                        'text/pdf',
-                                        'text/x-pdf'),
+                    'application/pdf',
+                    'application/x-pdf',
+                    'application/acrobat',
+                    'applications/vnd.pdf',
+                    'text/pdf',
+                    'text/x-pdf'),
                 $this->adminPrefix . 'PPT' => array(
-                                        'application/vnd.ms-powerpoint',
-                                        'application/mspowerpoint',
-                                        'application/ms-powerpoint',
-                                        'application/mspowerpnt',
-                                        'application/vnd-mspowerpoint',
-                                        'application/powerpoint',
-                                        'application/x-powerpoint',
-                                        'application/x-m'),
+                    'application/vnd.ms-powerpoint',
+                    'application/mspowerpoint',
+                    'application/ms-powerpoint',
+                    'application/mspowerpnt',
+                    'application/vnd-mspowerpoint',
+                    'application/powerpoint',
+                    'application/x-powerpoint',
+                    'application/x-m'),
                 $this->adminPrefix . 'PPTX'=> 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                 $this->adminPrefix . 'PPS' => 'application/vnd.ms-powerpoint',
                 $this->adminPrefix . 'PPSX'=> 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
                 $this->adminPrefix . 'ODT' => array(
-                                        'application/vnd.oasis.opendocument.text',
-                                        'application/x-vnd.oasis.opendocument.text'),
+                    'application/vnd.oasis.opendocument.text',
+                    'application/x-vnd.oasis.opendocument.text'),
                 $this->adminPrefix . 'XLS' => array(
-                                        'application/vnd.ms-excel',
-                                        'application/msexcel',
-                                        'application/x-msexcel',
-                                        'application/x-ms-excel',
-                                        'application/vnd.ms-excel',
-                                        'application/x-excel',
-                                        'application/x-dos_ms_excel',
-                                        'application/xls'),
+                    'application/vnd.ms-excel',
+                    'application/msexcel',
+                    'application/x-msexcel',
+                    'application/x-ms-excel',
+                    'application/vnd.ms-excel',
+                    'application/x-excel',
+                    'application/x-dos_ms_excel',
+                    'application/xls'),
                 $this->adminPrefix . 'XLSX'=> 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                 $this->adminPrefix . 'MP3' => array(
-                                        'audio/mpeg',
-                                        'audio/x-mpeg',
-                                        'audio/mp3',
-                                        'audio/x-mp3',
-                                        'audio/mpeg3',
-                                        'audio/x-mpeg3',
-                                        'audio/mpg',
-                                        'audio/x-mpg',
-                                        'audio/x-mpegaudio'),
+                    'audio/mpeg',
+                    'audio/x-mpeg',
+                    'audio/mp3',
+                    'audio/x-mp3',
+                    'audio/mpeg3',
+                    'audio/x-mpeg3',
+                    'audio/mpg',
+                    'audio/x-mpg',
+                    'audio/x-mpegaudio'),
                 $this->adminPrefix . 'M4A' => 'audio/mp4a-latm',
                 $this->adminPrefix . 'OGG' => array(
-                                        'audio/ogg',
-                                        'application/ogg'),
+                    'audio/ogg',
+                    'application/ogg'),
                 $this->adminPrefix . 'WAV' => array(
-                                        'audio/wav',
-                                        'audio/x-wav',
-                                        'audio/wave',
-                                        'audio/x-pn-wav'),
+                    'audio/wav',
+                    'audio/x-wav',
+                    'audio/wave',
+                    'audio/x-pn-wav'),
                 $this->adminPrefix . 'WMA' => 'audio/x-ms-wma',
                 $this->adminPrefix . 'MP4' => array(
-                                        'video/mp4v-es',
-                                        'audio/mp4'),
+                    'video/mp4v-es',
+                    'audio/mp4'),
                 $this->adminPrefix . 'M4V' => array(
-                                        'video/mp4',
-                                        'video/x-m4v'),
+                    'video/mp4',
+                    'video/x-m4v'),
                 $this->adminPrefix . 'MOV' => array(
-                                        'video/quicktime',
-                                        'video/x-quicktime',
-                                        'image/mov',
-                                        'audio/aiff',
-                                        'audio/x-midi',
-                                        'audio/x-wav',
-                                        'video/avi'),
+                    'video/quicktime',
+                    'video/x-quicktime',
+                    'image/mov',
+                    'audio/aiff',
+                    'audio/x-midi',
+                    'audio/x-wav',
+                    'video/avi'),
                 $this->adminPrefix . 'WMV' => 'video/x-ms-wmv',
                 $this->adminPrefix . 'AVI' => array(
-                                        'video/avi',
-                                        'video/msvideo',
-                                        'video/x-msvideo',
-                                        'image/avi',
-                                        'video/xmpg2',
-                                        'application/x-troff-msvideo',
-                                        'audio/aiff',
-                                        'audio/avi'),
+                    'video/avi',
+                    'video/msvideo',
+                    'video/x-msvideo',
+                    'image/avi',
+                    'video/xmpg2',
+                    'application/x-troff-msvideo',
+                    'audio/aiff',
+                    'audio/avi'),
                 $this->adminPrefix . 'MPG' => array(
-                                        'video/avi',
-                                        'video/mpeg',
-                                        'video/mpg',
-                                        'video/x-mpg',
-                                        'video/mpeg2',
-                                        'application/x-pn-mpg',
-                                        'video/x-mpeg',
-                                        'video/x-mpeg2a',
-                                        'audio/mpeg',
-                                        'audio/x-mpeg',
-                                        'image/mpg'),
+                    'video/avi',
+                    'video/mpeg',
+                    'video/mpg',
+                    'video/x-mpg',
+                    'video/mpeg2',
+                    'application/x-pn-mpg',
+                    'video/x-mpeg',
+                    'video/x-mpeg2a',
+                    'audio/mpeg',
+                    'audio/x-mpeg',
+                    'image/mpg'),
                 $this->adminPrefix . 'OGV' => 'video/ogg',
                 $this->adminPrefix . '3GP' => array(
-                                        'audio/3gpp',
-                                        'video/3gpp'),
+                    'audio/3gpp',
+                    'video/3gpp'),
                 $this->adminPrefix . '3G2' => array(
-                                        'video/3gpp2',
-                                        'audio/3gpp2'),
+                    'video/3gpp2',
+                    'audio/3gpp2'),
                 $this->adminPrefix . 'FLV' => 'video/x-flv',
                 $this->adminPrefix . 'WEBM'=> 'video/webm',
                 $this->adminPrefix . 'APK' => 'application/vnd.android.package-archive',
@@ -683,7 +685,7 @@ if (!class_exists('wpCommentAttachment')){
         {
             $required = ATT_REQ ? ' <span class="required">*</span>' : '';
             echo '<p class="comment-form-url comment-form-attachment">'.
-                '<label for="attachment">' . ATT_TITLE . $required .'<small class="attachmentRules">&nbsp;&nbsp;(Allowed file types: <strong>'. $this->displayAllowedFileTypes() .'</strong>, maximum file size: <strong>'. ATT_MAX .'MB(s).</strong></small></label>'.
+                '<label for="attachment">' . ATT_TITLE . $required .'<small class="attachmentRules">&nbsp;&nbsp;('.__('Allowed file types','comment-attachment').': <strong>'. $this->displayAllowedFileTypes() .'</strong>, '.__('maximum file size','comment-attachment').': <strong>'. ATT_MAX .'MB.</strong></small></label>'.
                 '</p>'.
                 '<p class="comment-form-url comment-form-attachment"><input id="attachment" name="attachment" type="file" /></p>';
         }
@@ -713,24 +715,24 @@ if (!class_exists('wpCommentAttachment')){
 
                 // Is: allowed mime type / file extension, and size? extension making lowercase, just to make sure
                 if (!in_array($fileType, $this->getAllowedMimeTypes()) || !in_array(strtolower($fileExtension), $this->getAllowedFileExtensions()) || $_FILES['attachment']['size'] > (ATT_MAX * 1048576)) { // file size from admin
-                    wp_die('<strong>ERROR:</strong> File you upload must be valid file type <strong>('. $this->displayAllowedFileTypes() .')</strong>, and under '. ATT_MAX .'MB(s)!');
+                    wp_die(sprintf(__('<strong>ERROR:</strong> File you upload must be valid file type <strong>(%1$s)</strong>, and under %2$sMB!','comment-attachment'),$this->displayAllowedFileTypes(),ATT_MAX));
                 }
 
-            // error 4 is actually empty file mate
+                // error 4 is actually empty file mate
             } elseif (ATT_REQ && $_FILES['attachment']['error'] == 4) {
-                wp_die('<strong>ERROR:</strong> Attachment is a required field!');
+                wp_die(__('<strong>ERROR:</strong> Attachment is a required field!','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 1) {
-                wp_die('<strong>ERROR:</strong> The uploaded file exceeds the upload_max_filesize directive in php.ini.');
+                wp_die(__('<strong>ERROR:</strong> The uploaded file exceeds the upload_max_filesize directive in php.ini.','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 2) {
-                wp_die('<strong>ERROR:</strong> The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.');
+                wp_die(__('<strong>ERROR:</strong> The uploaded file exceeds the MAX_FILE_SIZE directive that was specified in the HTML form.','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 3) {
-                wp_die('<strong>ERROR:</strong> The uploaded file was only partially uploaded. Please try again later.');
+                wp_die(__('<strong>ERROR:</strong> The uploaded file was only partially uploaded. Please try again later.','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 6) {
-                wp_die('<strong>ERROR:</strong> Missing a temporary folder.');
+                wp_die(__('<strong>ERROR:</strong> Missing a temporary folder.','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 7) {
-                wp_die('<strong>ERROR:</strong> Failed to write file to disk.');
+                wp_die(__('<strong>ERROR:</strong> Failed to write file to disk.','comment-attachment'));
             } elseif($_FILES['attachment']['error'] == 7) {
-                wp_die('<strong>ERROR:</strong> A PHP extension stopped the file upload.');
+                wp_die(__('<strong>ERROR:</strong> A PHP extension stopped the file upload.','comment-attachment'));
             }
             return $data;
         }
@@ -749,7 +751,7 @@ if (!class_exists('wpCommentAttachment')){
             if(wpCommentAttachment::hasAttachment($comment_id)){
                 $attachmentId = get_comment_meta($comment_id, 'attachmentId', TRUE);
                 $attachmentName = basename(get_attached_file($attachmentId));
-                $notify_message .= 'Attachment:' . "\r\n" .  $attachmentName . "\r\n\r\n";
+                $notify_message .= __('Attachment:','comment-attachment') . "\r\n" .  $attachmentName . "\r\n\r\n";
             }
             return $notify_message;
         }
@@ -820,7 +822,7 @@ if (!class_exists('wpCommentAttachment')){
                     $contentInner = $attachmentName;
                 } else {
                     // shall we do image thumbnail or not?
-                    if(ATT_THUMB && in_array($attachmentType, $this->getImageMimeTypes()) && !is_admin()){
+                    if(ATT_THUMB && in_array($attachmentType, $this->getImageMimeTypes())){
                         $attachmentRel = 'rel="lightbox"';
                         $contentInner = wp_get_attachment_image($attachmentId, ATT_TSIZE);
                         // audio player?
@@ -846,12 +848,12 @@ if (!class_exists('wpCommentAttachment')){
                 // attachment link, if it's not video / audio
                 if(is_admin()){
                     $contentInnerFinal = '<a '.$attachmentRel.' class="attachmentLink" target="_blank" href="'. $attachmentLink .'" title="Download: '. $attachmentName .'">';
-                        $contentInnerFinal .= $contentInner;
+                    $contentInnerFinal .= $contentInner;
                     $contentInnerFinal .= '</a>';
                 } else {
                     if((ATT_LINK) && !in_array($attachmentType, $this->getAudioMimeTypes()) && !in_array($attachmentType, $this->getVideoMimeTypes())){
                         $contentInnerFinal = '<a '.$attachmentRel.' class="attachmentLink" target="_blank" href="'. $attachmentLink .'" title="Download: '. $attachmentName .'">';
-                            $contentInnerFinal .= $contentInner;
+                        $contentInnerFinal .= $contentInner;
                         $contentInnerFinal .= '</a>';
                     } else {
                         $contentInnerFinal = $contentInner;
@@ -862,12 +864,13 @@ if (!class_exists('wpCommentAttachment')){
                 $contentInsert = $contentBefore . $contentInnerFinal . $contentAfter;
 
                 // attachment comment position
-                if(ATT_APOS == 'before' && !is_admin()){
+                if(ATT_APOS == 'before'){
                     $comment = $contentInsert . $comment;
-                } elseif(ATT_APOS == 'after' || is_admin()) {
-                    $comment .= $contentInsert;
+                } else{
+                    $comment .= $comment . $contentInsert;
                 }
             }
+
             return $comment;
         }
 
@@ -918,7 +921,7 @@ if (!class_exists('wpCommentAttachment')){
         {
             if(wpCommentAttachment::hasAttachment($comment->comment_ID)){
                 $url = $_SERVER["SCRIPT_NAME"] . "?c=$comment->comment_ID&deleteAtt=1";
-                $actions['deleteAtt'] = "<a href='$url' title='".esc_attr__('Delete Attachment')."'>".__('Delete Attachment').'</a>';
+                $actions['deleteAtt'] = "<a href='$url' title='".esc_attr__('Delete Attachment','comment-attachment')."'>".__('Delete Attachment','comment-attachment').'</a>';
             }
             return $actions;
         }
@@ -937,7 +940,7 @@ if (!class_exists('wpCommentAttachment')){
             static $thisPlugin;
             if (!$thisPlugin){ $thisPlugin = plugin_basename(__FILE__); }
             if ($file == $thisPlugin){
-                $settingsLink = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/options-discussion.php" title="Settings > Discussion > Comment Attachment">Settings</a>';
+                $settingsLink = '<a href="' . get_bloginfo('wpurl') . '/wp-admin/options-discussion.php" title="'.__('Settings > Discussion > Comment Attachment','comment-attachment').'">'.__('Settings','comment-attachment').'</a>';
                 array_push($links, $settingsLink);
             }
             return $links;
@@ -955,7 +958,7 @@ if (!class_exists('wpCommentAttachment')){
         {
             // attachment size check
             if($input['commentAttachmentMaxSize'] > wpCommentAttachment::getMaximumUploadFileSize()){
-                add_settings_error('commentAttachment', 'commentAttachmentMaxSize', 'I\'m sorry, but we can\'t have attachment bigger than server allows us to. If you wish to change this and you don\'t know how, <a href="https://www.google.com/search?q=how+to+change+php.ini+upload_max_filesize" target="_blank">try this.</a>');
+                add_settings_error('commentAttachment', 'commentAttachmentMaxSize', __('I\'m sorry, but we can\'t have attachment bigger than server allows us to. If you wish to change this and you don\'t know how, <a href="https://www.google.com/search?q=how+to+change+php.ini+upload_max_filesize" target="_blank">try this.</a>','comment-attachment'));
                 $input['commentAttachmentMaxSize'] = wpCommentAttachment::getMaximumUploadFileSize();
             }
             return $input;

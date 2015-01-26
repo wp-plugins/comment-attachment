@@ -6,8 +6,10 @@
     Author: latorante
     Author URI: http://latorante.name
     Author Email: martin@latorante.name
-    Version: 1.3.5
+    Version: 1.5
     License: GPLv2
+	Text Domain: comment-attachment
+	Domain Path: /languages/
 */
 /*
     Copyright 2013  Martin Picha  (email : martin@latorante.name)
@@ -41,7 +43,6 @@ if (!defined('ABSPATH')) { exit; }
 
 require_once('check.php');
 reqCheck::checkRequirements();
-
 
 /**
  * 3. Go, and do Comment Attachment!

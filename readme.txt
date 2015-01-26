@@ -3,10 +3,10 @@ Contributors: latorante
 Donate link: http://donate.latorante.name/
 Tags: comments, comment, image, attachment, images, files
 Requires at least: 3.0
-Tested up to: 3.8
+Tested up to: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Stable tag: 1.3.5
+Stable tag: 1.5
 
 Allow your visitors to attach files with their comments!
 
@@ -62,6 +62,12 @@ It should be easy peasy for you to style it! :)
 5. Wordpress 3.6.x audio player
 
 == Upgrade Notice ==
+
+= 1.5 =
+* Tested on latest WordPress 4.4
+* Added languages support (thanks to Johannes Bouchain)
+* Added German translation (thanks to Johannes Bouchain)
+* Added new plugin icon
 
 = 1.3 =
 * APK and rel="lightbox" on image attachments
