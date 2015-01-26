@@ -65,9 +65,6 @@ It should be easy peasy for you to style it! :)
 
 = 1.5 =
 * Tested on latest WordPress 4.4
-* Added languages support (thanks to Johannes Bouchain)
-* Added German translation (thanks to Johannes Bouchain)
-* Added new plugin icon
 
 = 1.3 =
 * APK and rel="lightbox" on image attachments
@@ -76,6 +73,12 @@ It should be easy peasy for you to style it! :)
 * Experimental featured image feature removal, bug-fix.
 
 == Changelog ==
+
+= 1.5 =
+* Tested on latest WordPress 4.4
+* Added languages support (thanks to Johannes Bouchain)
+* Added German translation (thanks to Johannes Bouchain)
+* Added new plugin icon
 
 = 1.3.5 =
 * Added ability to delete attachment from wordpress admin.
