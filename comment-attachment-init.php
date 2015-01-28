@@ -867,7 +867,7 @@ if (!class_exists('wpCommentAttachment')){
                 if(ATT_APOS == 'before'){
                     $comment = $contentInsert . $comment;
                 } else{
-                    $comment .= $comment . $contentInsert;
+                    $comment = $comment . $contentInsert;
                 }
             }
 

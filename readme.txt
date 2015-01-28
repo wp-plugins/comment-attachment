@@ -6,7 +6,7 @@ Requires at least: 3.0
 Tested up to: 4.4
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
-Stable tag: 1.5
+Stable tag: 1.5.5
 
 Allow your visitors to attach files with their comments!
 
@@ -62,6 +62,9 @@ It should be easy peasy for you to style it! :)
 5. Wordpress 3.6.x audio player
 
 == Upgrade Notice ==
+
+= 1.5.5 =
+* Wrong operator bugfix
 
 = 1.5 =
 * Tested on latest WordPress 4.4
